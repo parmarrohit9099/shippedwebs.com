@@ -1,0 +1,1603 @@
+/* ==========================================================================
+   Shipped. — stylesheet
+   Tokens first, then components. Every spacing/size value below comes from
+   the scales in :root — if you need a value that isn't there, add it to the
+   scale rather than hardcoding, or the drift starts again.
+   ========================================================================== */
+
+:root {
+  /* ---------- COLOUR ---------- */
+  --ink: #0B1220;
+  --panel: #121B2E;
+  --panel-2: #182338;
+  --line: #26324A;
+  --blueprint: #3E6CB5;
+  --signal: #FFB454;
+  --live: #4ADE80;
+  --paper: #EDE9E1;
+  --muted: #8B94A8;
+
+  /* --signal/--live above are ACCENT TEXT — they darken in light mode so they
+     stay readable on white. The *-bg pair below are FILLS: bright in both
+     themes, always carrying dark --on-signal text. Two jobs, two tokens. */
+  --signal-bg: #FFB454;
+  --live-bg: #4ADE80;
+
+  /* theme-dependent bits that aren't a flat colour */
+  --header-bg: rgba(11, 18, 32, 0.85);
+  --glow-a: rgba(62,108,181,0.14);
+  --glow-b: rgba(255,180,84,0.06);
+  --grid-line: rgba(62,108,181,0.05);
+  --blob: rgba(62,108,181,0.20);
+  --tint: rgba(62,108,181,0.08);
+  /* text that sits ON the orange accent — stays dark in both themes */
+  --on-signal: #0B1220;
+
+  /* ---------- TYPE ---------- */
+  --display: 'Space Grotesk', sans-serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* modular scale, ~1.15 ratio. was 24 ad-hoc sizes; now 7 + 2 fluid headings */
+  /* whole scale nudged up ~8% for a slightly larger, more readable feel */
+  --fs-xs:   0.78rem;   /* mono tags, badges */
+  --fs-sm:   0.88rem;   /* labels, meta, captions */
+  --fs-base: 1.01rem;   /* body copy inside cards */
+  --fs-md:   1.14rem;   /* lede, section intros */
+  --fs-lg:   1.3rem;    /* card headings */
+  --fs-xl:   2.35rem;   /* decorative quote mark */
+  --fs-h2: clamp(1.9rem, 3.4vw, 2.55rem);
+  --fs-h1: clamp(2.6rem, 5.2vw, 3.85rem);
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.35;
+  --lh-body: 1.65;
+
+  /* ---------- SPACING ---------- */
+  /* 17px base, so 1rem = 17px. Comments show the rendered pixel value. */
+  --s-1: 0.25rem;   /*  4px */
+  --s-2: 0.5rem;    /*  9px */
+  --s-3: 0.75rem;   /* 13px */
+  --s-4: 1rem;      /* 17px */
+  --s-5: 1.5rem;    /* 26px */
+  --s-6: 2rem;      /* 34px */
+  --s-7: 2.5rem;    /* 43px */
+  --s-8: 3rem;      /* 51px */
+  --s-9: 4rem;      /* 68px */
+  --s-10: 5.5rem;   /* 94px */
+
+  /* ---------- RADIUS ---------- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-full: 999px;
+
+  /* ---------- ELEVATION ---------- */
+  --shadow-sm: 0 8px 20px rgba(0,0,0,0.28);
+  --shadow-md: 0 16px 40px rgba(0,0,0,0.28);
+  --shadow-lg: 0 24px 60px rgba(0,0,0,0.34);
+
+  /* ---------- MOTION ---------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.18s;
+  --dur: 0.28s;
+  --dur-slow: 0.6s;
+
+  /* ---------- LAYOUT ---------- */
+  --page: 1120px;
+  --gutter: var(--s-5);
+}
+
+html { color-scheme: dark; }
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; font-size: 106.25%; } /* ~17px base */
+
+body {
+  position: relative;
+  background: var(--ink);
+  background-image:
+    radial-gradient(900px 500px at 85% -5%, var(--glow-a), transparent 60%),
+    radial-gradient(700px 500px at 0% 0%, var(--glow-b), transparent 55%);
+  background-attachment: fixed;
+  color: var(--paper);
+  font-family: var(--body);
+  line-height: var(--lh-body);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* Blueprint grid — static texture. It reads as engineering paper standing
+   still; drifting it just competed with the copy. */
+body::before {
+  content: ''; position: fixed; inset: -60px; z-index: -2; pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 78%);
+}
+/* Ambient glow — also static now; depth without movement. */
+body::after {
+  content: ''; position: fixed; z-index: -1; pointer-events: none;
+  width: 520px; height: 520px; top: 6%; right: -140px; border-radius: 50%;
+  background: radial-gradient(circle, var(--blob), transparent 68%);
+  filter: blur(36px);
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* One focus ring for the whole site. Keyboard users get a visible target on
+   every interactive element, not just form fields. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+.wrap { max-width: var(--page); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* ==========================================================================
+   SIGNATURE MOTION
+   Three loops, all tied to identity: the status dot proves it's live, the
+   pipeline ring proves work is in flight, the WhatsApp halo is an action
+   prompt. Everything decorative was cut.
+   ========================================================================== */
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--live), 0 0 0 0 rgba(74,222,128,0.5); }
+  50%      { box-shadow: 0 0 16px var(--live), 0 0 0 7px rgba(74,222,128,0); }
+}
+@keyframes ringPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(62,108,181,0.55); opacity: 1; }
+  50%      { box-shadow: 0 0 0 6px rgba(62,108,181,0); opacity: 0.55; }
+}
+@keyframes fabPulse {
+  0%   { transform: scale(1);   opacity: 0.45; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* ==========================================================================
+   NAV
+   ========================================================================== */
+
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+header nav {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-5);
+  padding: var(--s-4) var(--gutter);
+  max-width: var(--page); margin: 0 auto;
+}
+.logo {
+  font-family: var(--display); font-weight: 700; font-size: var(--fs-lg);
+  display: flex; align-items: center; gap: var(--s-2);
+  letter-spacing: -0.01em;
+}
+.logo::before {
+  content: ''; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 10px var(--live);
+  animation: dotPulse 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+/* image logo replaces the text wordmark + pulse dot */
+.logo:has(.logo-img)::before { display: none; }
+.logo-img {
+  height: 46px; width: auto; display: block;
+  border-radius: 10px;
+}
+@media (max-width: 640px) { .logo-img { height: 40px; } }
+.footer-brand .logo-img { height: 58px; }
+.nav-links { display: flex; gap: var(--s-6); font-size: var(--fs-base); color: var(--muted); }
+.nav-links a {
+  position: relative; padding: var(--s-1) 0;
+  transition: color var(--dur-fast) var(--ease);
+}
+/* underline grows from the left on hover — replaces the colour-only hover */
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -2px;
+  width: 100%; height: 1px; background: var(--signal);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.nav-links a:hover { color: var(--paper); }
+.nav-links a:hover::after,
+.nav-links a.active::after { transform: scaleX(1); }
+.nav-links a.active { color: var(--signal); }
+
+.nav-right { display: flex; align-items: center; gap: var(--s-3); }
+.nav-cta {
+  background: var(--signal-bg); color: var(--on-signal); font-weight: 600;
+  padding: var(--s-2) var(--s-4); border-radius: var(--r-sm); font-size: var(--fs-sm);
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255,180,84,0.30);
+}
+.menu-btn {
+  display: none; background: none; border: none; color: var(--paper);
+  font-size: 1.4rem; cursor: pointer; line-height: 1;
+}
+
+
+@media (max-width: 780px) {
+  .nav-links, .nav-cta { display: none; }
+  .menu-btn { display: block; }
+}
+
+/* ---------- MOBILE MENU ---------- */
+.mobile-menu {
+  display: none; position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  flex-direction: column; padding: var(--s-2) var(--gutter) var(--s-5);
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  padding: var(--s-3) 0; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: var(--fs-md);
+  transition: color var(--dur-fast) var(--ease);
+}
+.mobile-menu a:hover, .mobile-menu a.active { color: var(--paper); }
+.mobile-menu .nav-cta {
+  display: block; margin-top: var(--s-4); text-align: center;
+  color: var(--on-signal); border-top: none;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+
+.hero {
+  padding: var(--s-10) var(--gutter) var(--s-9);
+  max-width: var(--page); margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1.05fr) 0.95fr; gap: var(--s-9); align-items: center;
+}
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: var(--s-8); padding-top: var(--s-8); }
+}
+
+.eyebrow {
+  font-family: var(--mono); font-size: var(--fs-xs); color: var(--signal);
+  letter-spacing: 0.08em; margin-bottom: var(--s-4);
+  display: flex; align-items: center; gap: var(--s-3);
+}
+.eyebrow .dash { width: 24px; height: 1px; background: var(--signal); flex-shrink: 0; }
+
+h1 {
+  font-family: var(--display); font-weight: 700;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight); letter-spacing: -0.02em;
+  margin-bottom: var(--s-5);
+  text-wrap: balance;
+}
+/* animated gradient — the colours flow continuously across the word. The 4th
+   stop repeats the 1st so the loop is seamless; disabled under reduced-motion. */
+h1 span {
+  background: linear-gradient(100deg, var(--blueprint), var(--live) 35%, var(--signal) 65%, var(--blueprint));
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--blueprint);
+  animation: gradientFlow 6s linear infinite;
+}
+@keyframes gradientFlow {
+  to { background-position: 200% center; }
+}
+
+.hero p.lede {
+  font-size: var(--fs-md); color: var(--muted); line-height: var(--lh-body);
+  max-width: 46ch; margin-bottom: var(--s-7);
+}
+
+.cta-row { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.btn-primary {
+  background: var(--signal-bg); color: var(--on-signal); font-weight: 600;
+  padding: var(--s-3) var(--s-6); border-radius: var(--r-sm); font-size: var(--fs-md);
+  display: inline-block; border: none; cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255,180,84,0.32);
+}
+.btn-ghost {
+  border: 1px solid var(--line); color: var(--paper);
+  padding: var(--s-3) var(--s-6); border-radius: var(--r-sm); font-size: var(--fs-md);
+  display: inline-block;
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.btn-ghost:hover {
+  border-color: var(--blueprint); transform: translateY(-2px); background: var(--tint);
+}
+
+/* ==========================================================================
+   HERO VISUAL — deploy terminal
+   A flat rectangle on purpose. The isometric stack this replaces put small
+   mono type inside a preserve-3d subtree, which rasterises once and then
+   resamples through the perspective matrix — the labels had to be exiled
+   outside the 3D box to stay legible, and the result read as two unrelated
+   halves joined by leader lines that pointed nowhere. Here the type is drawn
+   natively, the box aligns to the same grid as the hero copy beside it, and
+   the claim ("we ship and monitor it") is shown as the thing itself.
+
+   Motion is a single pass on load: type the command, tick the four steps in
+   sequence, settle on the green LIVE row and hold. Nothing loops except the
+   status dot — a repeating animation next to the CTAs just competes with
+   them for the eye.
+
+   The timeline below is deliberately laid out end to end; .hero-viz itself
+   fades in at 0.58s (see the hero entry animations), so everything starts
+   after that:
+     0.75s  command types            2.85s  LIVE row lands
+     1.55s  steps tick, +0.28s each  3.10s  stats
+   ========================================================================== */
+
+.hero-viz { min-width: 0; display: flex; justify-content: center; }
+
+.term {
+  width: 100%; max-width: 460px;
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: linear-gradient(160deg, var(--panel), var(--ink) 78%);
+  box-shadow: var(--shadow-lg), 0 0 60px rgba(62,108,181,0.10);
+  overflow: hidden;
+  font-family: var(--mono);
+  /* JetBrains Mono ligates "--" into an em dash, which turns the --prod flag
+     into something that no longer reads as a flag. Off for the whole panel. */
+  font-variant-ligatures: none;
+}
+
+/* ---------- title bar ---------- */
+.term__bar {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: rgba(24,35,56,0.72);
+  border-bottom: 1px solid var(--line);
+}
+.term__dots { display: flex; gap: 6px; flex: none; }
+.term__dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(139,148,168,0.24); }
+.term__dots i:first-child { background: rgba(139,148,168,0.42); }
+.term__title {
+  font-size: var(--fs-xs); color: var(--muted); letter-spacing: 0.02em;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.term__env {
+  margin-left: auto; flex: none;
+  font-size: var(--fs-xs); color: var(--signal); letter-spacing: 0.08em;
+  padding: 2px var(--s-2); border-radius: var(--r-full);
+  border: 1px solid rgba(255,180,84,0.35); background: rgba(255,180,84,0.08);
+}
+
+/* ---------- body ---------- */
+.term__body {
+  padding: var(--s-5) var(--s-4) var(--s-4);
+  font-size: var(--fs-sm); line-height: 1.5;
+  background-image: radial-gradient(120% 90% at 12% 0%, rgba(62,108,181,0.10), transparent 62%);
+}
+
+/* the caret is the span's right border, so it sits flush against the last
+   typed character instead of needing its own element */
+.term__cmd { display: flex; align-items: baseline; gap: var(--s-2); color: var(--paper); }
+.term__prompt { color: var(--signal); flex: none; }
+.term__typed {
+  display: inline-block; width: 0; overflow: hidden; white-space: nowrap;
+  border-right: 2px solid var(--signal);
+  animation:
+    termType 0.85s steps(18, end) 0.75s forwards,
+    termCaret 2.6s step-end 0.75s forwards;
+}
+@keyframes termType { to { width: 18ch; } }
+/* two blinks while it types, then the caret retires */
+@keyframes termCaret {
+  0%, 40%   { border-color: var(--signal); }
+  41%, 62%  { border-color: transparent; }
+  63%, 84%  { border-color: var(--signal); }
+  85%, 100% { border-color: transparent; }
+}
+
+/* ---------- steps ---------- */
+.term__steps {
+  list-style: none; margin: var(--s-5) 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--s-3);
+}
+.term__step {
+  display: grid; grid-template-columns: auto auto 1fr auto;
+  align-items: center; gap: var(--s-3);
+  opacity: 0;
+  animation: termIn 0.45s var(--ease-out) forwards;
+  animation-delay: calc(1.55s + var(--i) * 0.28s);
+}
+@keyframes termIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.term__tick {
+  width: 18px; height: 18px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.4);
+}
+.term__tick svg {
+  width: 11px; height: 11px; fill: none; stroke: var(--live);
+  stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.term__name { color: #DCE3EF; white-space: nowrap; }
+/* dotted leader across the gap, nudged onto the text baseline */
+.term__leader {
+  min-width: var(--s-4);
+  border-bottom: 1px dotted rgba(62,108,181,0.5);
+  transform: translateY(-3px);
+}
+.term__time { color: var(--muted); font-size: var(--fs-xs); white-space: nowrap; }
+
+/* ---------- the payoff ---------- */
+.term__live {
+  display: flex; align-items: center; gap: var(--s-3);
+  margin-top: var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid rgba(74,222,128,0.32); border-radius: var(--r-md);
+  background: linear-gradient(120deg, rgba(30,48,44,0.9), rgba(18,27,46,0.6));
+  box-shadow: 0 0 30px rgba(74,222,128,0.12);
+  opacity: 0;
+  animation: termIn 0.5s var(--ease-out) 2.85s forwards;
+}
+.term__pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--live-bg); flex: none;
+  animation: dotPulse 2.4s var(--ease) infinite;
+}
+.term__live-tag { color: var(--live); font-size: var(--fs-xs); letter-spacing: 0.14em; flex: none; }
+.term__url {
+  color: var(--paper); margin-left: auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.term__stats {
+  list-style: none; margin: var(--s-4) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5);
+  font-size: var(--fs-xs); color: var(--muted);
+  opacity: 0;
+  animation: termIn 0.5s var(--ease-out) 3.1s forwards;
+}
+.term__stats li { display: flex; align-items: baseline; gap: 5px; }
+.term__stats b { color: var(--paper); font-weight: 500; }
+
+/* Decoration only, and the tallest thing in the hero — below the breakpoint
+   it would just push the CTAs off the first screen, so it goes. */
+@media (max-width: 900px) { .hero-viz { display: none; } }
+
+/* ==========================================================================
+   3D ICON TILE — shared component (.i3d)
+   A genuine tile in perspective: two faces, backfaces hidden, flipped on Y.
+   Only the tile rotates — each face is square-on to the viewer at the moment
+   you actually read it, so the artwork never goes through the resample that
+   was wrecking the labels in the hero visual this replaced. Flips on hover
+   in the services grid, spins the process badges.
+   ========================================================================== */
+.i3d {
+  --i3d-size: 34px;
+  flex: none; display: block;
+  width: var(--i3d-size); height: var(--i3d-size);
+  perspective: 260px;
+}
+.i3d__box {
+  position: relative; display: block; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(-8deg) rotateY(0deg);
+  transition: transform 0.7s var(--ease-out);
+}
+.i3d__face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 9px;
+  border: 1px solid rgba(62,108,181,0.5);
+  background: linear-gradient(150deg, var(--panel-2), var(--panel));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 14px rgba(0,0,0,0.35);
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+}
+.i3d__face svg {
+  width: 58%; height: 58%;
+  fill: none; stroke: var(--blueprint); stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.i3d__face--b {
+  transform: rotateY(180deg);
+  border-color: rgba(255,180,84,0.5);
+  background: linear-gradient(150deg, rgba(58,44,24,0.95), var(--panel));
+}
+.i3d__face--b svg { stroke: var(--signal); }
+
+/* ==========================================================================
+   SELECTED WORK
+   Each card is a browser frame around a real screenshot — the chrome is what
+   sells it as a shipped site rather than a mockup, and the pulsing "Live"
+   chip is the same status language the pipeline strip uses.
+   ========================================================================== */
+
+.work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-6); }
+@media (max-width: 900px) { .work-grid { grid-template-columns: 1fr; gap: var(--s-7); } }
+
+.work-card {
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg) 0 var(--r-lg) 0;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.work-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--blueprint);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--blueprint);
+}
+
+/* ---- browser frame ---- */
+.work-shot { position: relative; display: block; text-decoration: none; }
+.shot-bar {
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.shot-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
+.shot-url {
+  flex: 1; min-width: 0; margin-left: var(--s-2);
+  font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted);
+  padding: var(--s-1) var(--s-3);
+  background: rgba(255,255,255,0.04); border-radius: var(--r-full);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Fixed-ratio window onto a tall screenshot: the image is pinned to the top
+   so every card shows the client's hero, not a random slice of the page. */
+.shot-frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--ink); }
+.shot-frame img {
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  display: block;
+  transition: transform var(--dur-slow) var(--ease);
+}
+.work-card:hover .shot-frame img { transform: scale(1.04); }
+
+.shot-status {
+  position: absolute; bottom: var(--s-4); left: var(--s-4);
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
+  color: var(--paper); background: rgba(11,18,32,0.82);
+  border: 1px solid rgba(74,222,128,0.35); border-radius: var(--r-full);
+  backdrop-filter: blur(6px);
+}
+.shot-status .live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--live-bg);
+  animation: dotPulse 2.4s var(--ease) infinite;
+}
+
+/* ---- case detail ---- */
+.work-body { padding: var(--s-6); display: flex; flex-direction: column; flex: 1; }
+.work-body h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  line-height: var(--lh-snug);
+}
+.work-cat { color: var(--muted); font-weight: 400; font-size: var(--fs-base); }
+
+.work-line {
+  margin-top: var(--s-3);
+  color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-snug);
+}
+
+.work-tags { list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-5); }
+.work-tags li {
+  font-family: var(--mono); font-size: var(--fs-xs); color: var(--blueprint);
+  padding: var(--s-1) var(--s-3);
+  border: 1px solid var(--line); border-radius: var(--r-full);
+}
+
+.work-link {
+  margin-top: auto; padding-top: var(--s-5);
+  align-self: flex-start;
+  font-size: var(--fs-sm); font-weight: 600; color: var(--signal); text-decoration: none;
+}
+.work-link span { display: inline-block; transition: transform var(--dur-fast) var(--ease); }
+.work-link:hover span, .work-card:hover .work-link span { transform: translateX(4px); }
+
+@media (max-width: 640px) {
+  .work-body { padding: var(--s-5); }
+}
+
+/* ==========================================================================
+   STRIPS (pipeline + stats)
+   ========================================================================== */
+
+.pipeline-strip {
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.pipeline-strip .wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--gutter); flex-wrap: wrap; gap: var(--s-3);
+}
+.p-stage {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.p-stage .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blueprint); flex-shrink: 0; }
+.p-stage.done .dot { background: var(--live); }
+.p-stage:not(.done) .dot { animation: ringPulse 1.9s ease-in-out infinite; }
+.p-arrow { color: var(--line); font-size: var(--fs-base); }
+@media (max-width: 700px) { .p-arrow { display: none; } }
+
+.stats-strip { border-bottom: 1px solid var(--line); background: var(--panel); }
+.stats-strip .wrap {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: var(--s-7) var(--gutter);
+}
+@media (max-width: 700px) {
+  .stats-strip .wrap { grid-template-columns: repeat(2, 1fr); gap: var(--s-6); }
+  .stat:nth-child(2) { border-right: none; }
+}
+.stat { text-align: center; border-right: 1px solid var(--line); }
+.stat:last-child { border-right: none; }
+.stat .num {
+  font-family: var(--mono); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.1rem);
+  color: var(--live); line-height: var(--lh-tight);
+  /* static glow — the pulsing version put four throbbing numbers on screen */
+  text-shadow: 0 0 24px rgba(74,222,128,0.22);
+}
+.stat .label { color: var(--muted); font-size: var(--fs-sm); margin-top: var(--s-2); }
+
+/* ==========================================================================
+   SECTIONS
+   ========================================================================== */
+
+section { padding: var(--s-8) var(--gutter); max-width: var(--page); margin: 0 auto; }
+@media (max-width: 640px) { section { padding: var(--s-7) var(--s-4); } }
+
+.section-head { max-width: 640px; margin-bottom: var(--s-8); }
+.section-head .eyebrow { margin-bottom: var(--s-3); }
+h2 {
+  font-family: var(--display); font-weight: 600;
+  font-size: var(--fs-h2); line-height: var(--lh-snug);
+  margin-bottom: var(--s-3); letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.section-head p { color: var(--muted); font-size: var(--fs-md); }
+.section-head p.byline { font-size: var(--fs-base); margin-top: var(--s-2); }
+
+/* ---------- SERVICES ---------- */
+.services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-5); }
+@media (max-width: 780px) { .services-grid { grid-template-columns: 1fr; } }
+.service-card {
+  display: flex; align-items: flex-start; gap: var(--s-5);
+  padding: var(--s-6);
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  /* accent border at rest, not on hover */
+  border: 1px solid var(--blueprint);
+  /* the shape: rounded on one diagonal, squared off on the other — reads as
+     drawn rather than default-rounded, and suits the blueprint language */
+  border-radius: var(--r-lg) 0 var(--r-lg) 0;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur) var(--ease);
+}
+.services-grid .service-card:hover { transform: translateY(-4px); }
+.service-num {
+  width: auto; text-align: center;
+  font-family: var(--mono); font-size: var(--fs-sm);
+  color: var(--blueprint); letter-spacing: 0.08em; font-weight: 500;
+  transition: color var(--dur) var(--ease);
+}
+.services-grid .service-card:hover .service-num { color: var(--signal); }
+/* number over tile, in one column, so the card keeps its two-part rhythm.
+   The tile turns to the arrow face on hover — the card is the hover target,
+   not the icon, so the whole thing reacts as one object. */
+.service-icon {
+  flex: none;
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-2);
+}
+.service-icon .i3d { --i3d-size: 42px; }
+.service-icon .i3d__face { border-radius: 11px; }
+.services-grid .service-card:hover .i3d__box { transform: rotateX(-8deg) rotateY(180deg); }
+.service-body { flex: 1; min-width: 0; }
+.service-card h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  line-height: var(--lh-snug); margin-bottom: var(--s-1);
+}
+.service-card p { color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-snug); }
+@media (max-width: 640px) {
+  .service-card { gap: var(--s-4); padding: var(--s-5); }
+  .service-icon .i3d { --i3d-size: 36px; }
+}
+
+/* ---------- PROCESS ---------- */
+.process { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-5); position: relative; }
+@media (max-width: 900px) {
+  .process { grid-template-columns: 1fr; gap: var(--s-6); }
+  .process::before { display: none; }
+}
+.process::before {
+  content: ''; position: absolute; top: 22px; left: 6%; right: 6%; height: 1px;
+  background: linear-gradient(90deg, var(--live), var(--blueprint), var(--signal));
+}
+.stage-card { position: relative; }
+/* The badge is a coin: the fill lives on the two faces, not on .stage-num
+   itself, so the disc can turn number → tick without the connector line
+   showing through a translucent back. The 4px ink ring stays on the outer
+   element and keeps masking the line at rest. */
+.stage-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: transparent; border: 4px solid var(--ink);
+  display: block; margin-bottom: var(--s-4);
+  position: relative; z-index: 2;
+  perspective: 320px;
+}
+.stage-num .i3d__box { transform: rotateY(0deg); }
+.stage-num .i3d__face {
+  border: none; border-radius: 50%; box-shadow: none;
+  /* blueprint is dark, so white is the readable choice on the default fill */
+  background: var(--blueprint); color: #fff;
+  font-family: var(--mono); font-size: var(--fs-sm); font-weight: 700;
+}
+.stage-num .i3d__face svg {
+  width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.6;
+}
+/* the bright fills take dark text instead — 10:1 either way */
+.stage-card:nth-child(1) .stage-num .i3d__face { background: var(--live-bg); color: var(--on-signal); }
+.stage-card:nth-child(4) .stage-num .i3d__face { background: var(--signal-bg); color: var(--on-signal); }
+.process .stage-card:hover .stage-num .i3d__box { transform: rotateY(180deg); }
+.stage-card h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+.stage-card p { color: var(--muted); font-size: var(--fs-base); }
+
+/* ---------- PRICING ---------- */
+.pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-5); }
+@media (max-width: 1100px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .pricing-grid { grid-template-columns: 1fr; } }
+.price-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: var(--s-5); display: flex; flex-direction: column;
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.pricing-grid .price-card:hover {
+  transform: translateY(-4px); border-color: var(--blueprint);
+  box-shadow: var(--shadow-md);
+}
+.price-card.featured {
+  border-color: var(--signal); background: var(--panel-2); position: relative;
+  /* static lift — the 3.4s breathing glow is gone */
+  box-shadow: 0 12px 40px rgba(255,180,84,0.16);
+}
+.pricing-grid .price-card.featured:hover {
+  border-color: var(--signal);
+  box-shadow: 0 18px 48px rgba(255,180,84,0.24);
+}
+.price-card.featured::before {
+  content: 'MOST BOOKED'; position: absolute; top: -11px; left: var(--s-5);
+  color: var(--on-signal); font-family: var(--mono);
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+  padding: var(--s-1) var(--s-2); border-radius: var(--r-sm);
+  /* bright in both themes — dark text is always legible on it */
+  background: linear-gradient(90deg, #FFB454, #ffd9a0);
+}
+.price-card h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  line-height: var(--lh-snug); margin-bottom: var(--s-1);
+}
+.price-card .range {
+  font-family: var(--mono); color: var(--signal); font-weight: 500;
+  /* clamped to survive the 4-up layout, where each card is only ~200px wide */
+  font-size: clamp(0.8rem, 0.85vw + 0.28rem, 1.22rem);
+  /* keep the full range on one line instead of wrapping the second amount below */
+  white-space: nowrap;
+  margin-bottom: var(--s-5);
+}
+.price-card ul {
+  list-style: none; color: var(--muted); font-size: var(--fs-base);
+  line-height: var(--lh-snug); flex-grow: 1;
+}
+.price-card li {
+  padding: var(--s-2) 0; border-top: 1px solid var(--line);
+  display: flex; gap: var(--s-2); align-items: baseline;
+}
+.price-card li:first-child { border-top: none; }
+/* flex + shrink-0 so wrapped bullet text aligns under itself, not the arrow */
+.price-card li::before { content: '→'; color: var(--blueprint); flex-shrink: 0; }
+
+/* Care Plan — a recurring add-on, deliberately lighter than the 3 core tiers:
+   full-width band, dashed border, blueprint (not signal) accent. */
+.care-card {
+  margin-top: var(--s-5);
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 1.5fr;
+  gap: var(--s-6);
+  align-items: center;
+}
+@media (max-width: 780px) { .care-card { grid-template-columns: 1fr; gap: var(--s-5); } }
+.care-badge {
+  display: inline-block; margin-bottom: var(--s-3);
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--blueprint); border: 1px solid var(--blueprint); border-radius: var(--r-sm);
+  padding: 2px var(--s-2);
+}
+.care-card h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  margin-bottom: var(--s-1);
+}
+.care-sub { color: var(--muted); font-size: var(--fs-base); margin-bottom: var(--s-3); }
+.care-price { font-family: var(--mono); color: var(--signal); display: flex; align-items: baseline; gap: 2px; }
+.care-price .amount { font-size: 1.6rem; font-weight: 700; }
+.care-price .per { font-size: var(--fs-base); color: var(--muted); }
+.care-terms { color: var(--muted); font-size: var(--fs-sm); margin-top: var(--s-1); }
+.care-feats { list-style: none; color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-snug); }
+.care-feats li { padding: var(--s-2) 0; display: flex; gap: var(--s-2); align-items: baseline; }
+.care-feats li::before { content: '+'; color: var(--blueprint); flex-shrink: 0; font-family: var(--mono); font-weight: 700; }
+
+/* ---------- OPTIONAL ADD-ONS ---------- */
+.marketing-head { margin-top: var(--s-8); margin-bottom: var(--s-5); }
+.marketing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5); }
+@media (max-width: 980px) { .marketing-grid { grid-template-columns: 1fr; } }
+.mkt-card {
+  position: relative;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: var(--s-6); display: flex; flex-direction: column;
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.mkt-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.mkt-card h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  margin-bottom: var(--s-1);
+}
+.mkt-price { font-family: var(--mono); font-weight: 500; font-size: var(--fs-md); margin-bottom: var(--s-2); }
+.mkt-price .per { font-size: var(--fs-base); color: var(--muted); }
+.mkt-sub { color: var(--muted); font-size: var(--fs-sm); line-height: var(--lh-snug); margin-bottom: var(--s-5); }
+.mkt-card ul {
+  list-style: none; color: var(--muted); font-size: var(--fs-base);
+  line-height: var(--lh-snug); flex-grow: 1;
+}
+.mkt-card li { padding: var(--s-2) 0; display: flex; gap: var(--s-2); align-items: baseline; }
+.mkt-card li::before { content: '—'; flex-shrink: 0; }
+
+/* Care — ongoing support, blueprint accent */
+.mkt-card.care { border-color: var(--blueprint); }
+.mkt-card.care:hover { border-color: var(--blueprint); box-shadow: 0 18px 48px rgba(62,108,181,0.20); }
+.mkt-card.care h3 { color: var(--blueprint); }
+.mkt-card.care .mkt-price { color: var(--blueprint); }
+.mkt-card.care li::before { color: var(--blueprint); }
+.mkt-card.care .mkt-badge { color: #fff; background: var(--blueprint); }
+
+/* Grow — the featured green plan */
+.mkt-card.grow { border-color: var(--live); box-shadow: 0 12px 40px rgba(74,222,128,0.14); }
+.mkt-card.grow:hover { border-color: var(--live); box-shadow: 0 18px 48px rgba(74,222,128,0.22); }
+.mkt-card.grow h3 { color: var(--live); }
+.mkt-card.grow .mkt-price { color: var(--live); }
+.mkt-card.grow li::before { color: var(--live); }
+.mkt-badge {
+  position: absolute; top: -11px; right: var(--s-5);
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--on-signal); background: var(--live-bg);
+  padding: var(--s-1) var(--s-2); border-radius: var(--r-sm);
+}
+/* Setup only — deliberately dimmed */
+.mkt-card.muted { background: transparent; }
+.mkt-card.muted h3 { color: var(--muted); }
+.mkt-card.muted .mkt-price { color: var(--muted); }
+.mkt-card.muted li { color: var(--muted); opacity: 0.85; }
+.mkt-card.muted li::before { color: var(--line); }
+.mkt-card.muted .mkt-badge { color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); }
+
+/* ---------- PAYMENT METHODS ---------- */
+.pay-methods {
+  margin-top: var(--s-5);
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--s-3) var(--s-4);
+}
+.pay-label {
+  font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted);
+}
+.pay-list { list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0; padding: 0; }
+.pay-chip {
+  font-family: var(--mono); font-size: var(--fs-sm); font-weight: 600;
+  color: var(--paper); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: var(--r-full);
+  padding: var(--s-2) var(--s-4);
+}
+.pay-note { font-size: var(--fs-sm); color: var(--muted); margin-left: auto; }
+@media (max-width: 640px) {
+  .pay-methods { flex-direction: column; align-items: flex-start; }
+  .pay-note { margin-left: 0; }
+}
+
+/* ---------- WHY ---------- */
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-6); }
+@media (max-width: 780px) { .why-grid { grid-template-columns: 1fr; } }
+.why-item .num {
+  font-family: var(--mono); color: var(--blueprint); font-size: var(--fs-sm);
+  margin-bottom: var(--s-3);
+}
+.why-item h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+.why-item p { color: var(--muted); font-size: var(--fs-base); }
+
+/* ---------- TESTIMONIALS ---------- */
+.testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5); }
+@media (max-width: 900px) { .testimonial-grid { grid-template-columns: 1fr; } }
+.testimonial-card {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: var(--s-6); display: flex; flex-direction: column;
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.testimonial-grid .testimonial-card:hover {
+  transform: translateY(-4px); border-color: var(--blueprint);
+  box-shadow: var(--shadow-md);
+}
+.testimonial-card .quote-mark {
+  font-family: var(--display); font-size: var(--fs-xl); color: var(--blueprint);
+  line-height: 1; margin-bottom: var(--s-2);
+}
+.testimonial-card p.quote {
+  color: var(--paper); font-size: var(--fs-base); line-height: var(--lh-body);
+  margin-bottom: var(--s-5); flex-grow: 1;
+}
+.testimonial-card .who { display: flex; align-items: center; gap: var(--s-3); }
+.testimonial-card .avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-family: var(--display); font-weight: 700; color: var(--signal); font-size: var(--fs-base);
+  border: 1px solid var(--line);
+}
+.testimonial-card .who-name { font-size: var(--fs-base); font-weight: 600; }
+.testimonial-card .who-role { font-size: var(--fs-sm); color: var(--muted); }
+
+/* ---------- FAQ ---------- */
+/* centred block — head and list share the same axis, and the list runs wider
+   than the old 760px so the right-hand gap closes up */
+#faq .section-head {
+  max-width: 640px; margin-left: auto; margin-right: auto;
+  text-align: center;
+}
+#faq .section-head .eyebrow { justify-content: center; }
+.faq-list { max-width: none; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--line); }
+.faq-item:first-child { border-top: 1px solid var(--line); }
+.faq-q {
+  width: 100%; background: none; border: none; text-align: left; cursor: pointer;
+  padding: var(--s-5) 0; display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-4);
+  color: var(--paper); font-family: var(--display); font-size: var(--fs-md); font-weight: 600;
+  transition: color var(--dur-fast) var(--ease);
+}
+.faq-q:hover { color: var(--signal); }
+.faq-q .icon {
+  color: var(--signal); font-family: var(--mono); font-size: var(--fs-lg);
+  flex-shrink: 0; transition: transform var(--dur) var(--ease);
+}
+.faq-item.open .faq-q .icon { transform: rotate(45deg); }
+/* 0fr→1fr grid rather than a max-height guess — answers of any length open
+   fully. The old max-height:220px silently clipped long answers on mobile. */
+.faq-a {
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur) var(--ease);
+}
+.faq-a > p {
+  overflow: hidden; min-height: 0;
+  color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-body);
+}
+.faq-item.open .faq-a { grid-template-rows: 1fr; }
+.faq-item.open .faq-a > p { padding-bottom: var(--s-5); }
+
+/* ---------- CONTACT ---------- */
+.contact-box {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: var(--s-8); display: grid;
+  /* the pitch column is shorter than the form, so give the form the extra
+     width and centre the pitch against it instead of letting it hang at top */
+  grid-template-columns: 0.85fr 1.15fr; gap: var(--s-8);
+  align-items: center;
+}
+@media (max-width: 850px) {
+  .contact-box {
+    grid-template-columns: 1fr; padding: var(--s-6) var(--s-5); gap: var(--s-6);
+    align-items: stretch;
+  }
+}
+.contact-box h2 { margin-bottom: var(--s-3); }
+.contact-box .lede { color: var(--muted); margin-bottom: var(--s-5); font-size: var(--fs-base); }
+.contact-list { list-style: none; font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
+.contact-list li { padding: var(--s-2) 0; }
+.contact-list b { color: var(--paper); font-weight: 500; }
+.contact-list a { color: var(--signal); transition: opacity var(--dur-fast) var(--ease); }
+.contact-list a:hover { opacity: 0.75; }
+
+form { display: flex; flex-direction: column; gap: var(--s-3); }
+label { font-size: var(--fs-sm); color: var(--muted); margin-bottom: calc(var(--s-2) * -1); }
+/* Grid/flex children default to min-width:auto (their content's intrinsic
+   width). The <select>'s longest option ("Dynamic website with admin panel")
+   is wider than a small phone, so without this the whole contact box — and the
+   page — overflows horizontally below ~384px. min-width:0 lets them shrink. */
+.contact-box > * { min-width: 0; }
+input, textarea, select {
+  background: var(--ink); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-3); color: var(--paper);
+  font-family: var(--body); font-size: var(--fs-base);
+  width: 100%; min-width: 0; max-width: 100%;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+input:hover, textarea:hover, select:hover { border-color: var(--blueprint); }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--blueprint);
+  box-shadow: 0 0 0 3px var(--tint);
+}
+textarea { resize: vertical; min-height: 90px; }
+.form-status { font-family: var(--mono); font-size: var(--fs-sm); color: var(--live); min-height: 18px; }
+.form-status a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+form .btn-primary { margin-top: var(--s-2); }
+
+/* ---------- FOOTER ---------- */
+footer {
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, transparent, var(--tint));
+  padding: var(--s-7) var(--gutter) var(--s-5);
+  color: var(--muted); font-size: var(--fs-sm);
+}
+/* gradient hairline riding the top edge */
+footer::before {
+  content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blueprint), var(--signal), transparent);
+  opacity: 0.75;
+}
+.footer-inner {
+  position: relative; z-index: 1;
+  max-width: var(--page); margin: 0 auto;
+  display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: var(--s-8);
+}
+@media (max-width: 780px) {
+  .footer-inner { grid-template-columns: 1fr; gap: var(--s-7); }
+}
+
+.footer-brand .logo { margin-bottom: var(--s-4); }
+.footer-brand p { color: var(--muted); max-width: 34ch; line-height: var(--lh-body); }
+.footer-status {
+  display: inline-flex; align-items: center; gap: var(--s-2); margin-top: var(--s-5);
+  font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.06em; color: var(--live);
+  border: 1px solid var(--line); border-radius: var(--r-full); padding: var(--s-2) var(--s-3);
+}
+.footer-status .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--live-bg);
+  box-shadow: 0 0 10px var(--live-bg); animation: dotPulse 2.4s ease-in-out infinite;
+}
+
+.footer-col h4 {
+  font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--paper); margin-bottom: var(--s-4);
+}
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: var(--s-3); }
+.footer-col a {
+  display: inline-flex; align-items: center; gap: var(--s-3);
+  color: var(--muted); font-size: var(--fs-base);
+  transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.footer-col a svg { width: 17px; height: 17px; fill: currentColor; flex-shrink: 0; }
+.footer-col a:hover { color: var(--signal); transform: translateX(3px); }
+
+/* Branded social links — white glyph on a filled, brand-coloured circle */
+.footer-col a.social-link { gap: var(--s-3); }
+.footer-col a.social-link .social-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.footer-col a.social-link .social-icon svg { width: 19px; height: 19px; fill: #fff; }
+.social-wa .social-icon { background: #25D366; }
+.social-ig .social-icon {
+  background: radial-gradient(circle at 28% 108%,
+    #FEDA75 0%, #FA7E1E 22%, #D62976 50%, #962FBF 74%, #4F5BD5 100%);
+}
+.social-mail .social-icon { background: var(--blueprint); }
+.social-arrow .social-icon { background: var(--panel-2); border: 1px solid var(--line); }
+.social-arrow .social-icon svg { fill: none; stroke: var(--muted); width: 16px; height: 16px; }
+/* icon keeps its colour; only the badge lifts + the label brightens on hover */
+.footer-col a.social-link:hover { color: var(--paper); transform: none; }
+.footer-col a.social-link:hover .social-icon { transform: translateY(-2px); }
+.social-wa:hover .social-icon { box-shadow: 0 6px 16px rgba(37,211,102,0.35); }
+.social-ig:hover .social-icon { box-shadow: 0 6px 16px rgba(214,41,118,0.35); }
+.social-mail:hover .social-icon { box-shadow: 0 6px 16px rgba(62,108,181,0.40); }
+.social-arrow:hover .social-icon { border-color: var(--blueprint); }
+.social-arrow:hover .social-icon svg { stroke: var(--paper); }
+
+.footer-bottom {
+  position: relative; z-index: 1;
+  max-width: var(--page); margin: var(--s-6) auto 0; padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-3) var(--s-5); flex-wrap: wrap;
+}
+.footer-bottom p { font-size: var(--fs-xs); opacity: 0.8; }
+@media (max-width: 560px) {
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- LEGAL PAGES (privacy, terms) ---------- */
+.legal { max-width: var(--page); margin: 0 auto; padding: var(--s-8) var(--gutter) var(--s-6); }
+/* .legal-block is a <section>, so it would otherwise inherit the global
+   `section { padding: var(--s-10); max-width; margin: auto }` rule — which
+   added ~94px of padding top+bottom (huge gaps) and re-centred each block
+   narrower. Reset all three here. */
+.legal-block { max-width: none; margin: 0; padding: 0; }
+.legal-head { margin-bottom: var(--s-4); }
+.legal h1 {
+  font-family: var(--display); font-weight: 700; font-size: var(--fs-h2);
+  line-height: var(--lh-snug); letter-spacing: -0.02em; margin-bottom: var(--s-2);
+}
+.legal .updated { font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
+.legal .intro { color: var(--muted); font-size: var(--fs-md); line-height: var(--lh-body); margin-top: var(--s-4); }
+.legal h2 {
+  font-family: var(--display); font-weight: 600; font-size: var(--fs-lg);
+  margin: var(--s-6) 0 var(--s-3); padding-top: var(--s-5); border-top: 1px solid var(--line);
+}
+.legal h2 .num { font-family: var(--mono); color: var(--blueprint); font-size: var(--fs-base); margin-right: var(--s-2); }
+.legal p { color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-body); margin-bottom: var(--s-3); }
+.legal ul { list-style: none; margin: 0 0 var(--s-3); }
+.legal li {
+  color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-body);
+  padding: var(--s-1) 0 var(--s-1) var(--s-5); position: relative;
+}
+.legal li::before { content: '→'; position: absolute; left: 0; color: var(--blueprint); }
+.legal a { color: var(--signal); transition: opacity var(--dur-fast) var(--ease); }
+.legal a:hover { opacity: 0.75; }
+.legal strong, .legal b { color: var(--paper); font-weight: 600; }
+.legal .legal-back { display: inline-block; margin-top: var(--s-5); font-family: var(--mono); font-size: var(--fs-sm); }
+
+/* ==========================================================================
+   SCROLL REVEAL
+   Motion that responds to the visitor, rather than looping at them.
+   ========================================================================== */
+
+.reveal {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+.reveal.in-view { opacity: 1; transform: none; }
+/* stagger siblings so a grid of cards arrives in sequence, not as one slab.
+   (JS also sets an inline transition-delay per grid item; these are the
+   no-JS fallback.) */
+.reveal:nth-child(2) { transition-delay: 60ms; }
+.reveal:nth-child(3) { transition-delay: 120ms; }
+.reveal:nth-child(4) { transition-delay: 180ms; }
+.reveal:nth-child(5) { transition-delay: 240ms; }
+
+/* ==========================================================================
+   MOTION POLISH
+   Reference feel: ozrit.com — smooth staggered entrances, premium hover
+   micro-interactions, gentle background parallax. All of it is layered on top
+   of the existing static design and is fully disabled under reduced-motion.
+   ========================================================================== */
+
+/* ---- scroll progress bar ---- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 200;
+  background: linear-gradient(90deg, var(--blueprint), var(--live), var(--signal));
+  box-shadow: 0 0 12px rgba(255,180,84,0.45);
+  transition: width 0.08s linear; pointer-events: none;
+}
+
+/* ---- hero entrance: staggered rise + fade on first paint ---- */
+@keyframes heroRise {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero .eyebrow,
+.hero h1,
+.hero p.lede,
+.hero .cta-row,
+.hero .cta-alt,
+.hero .hero-viz {
+  opacity: 0; animation: heroRise 0.8s var(--ease-out) forwards;
+}
+.hero .eyebrow  { animation-delay: 0.05s; }
+.hero h1        { animation-delay: 0.16s; }
+.hero p.lede    { animation-delay: 0.30s; }
+.hero .cta-row  { animation-delay: 0.44s; }
+.hero .cta-alt  { animation-delay: 0.52s; }
+.hero .hero-viz { animation-delay: 0.58s; }
+
+/* ---- premium button hover: light sheen sweep ---- */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: ''; position: absolute; top: 0; left: -80%; width: 55%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+  transition: left 0.6s var(--ease);
+}
+.btn-primary:hover::after { left: 140%; }
+
+/* ---- richer card hover: lift gains a shadow + accent, smoothly ---- */
+.service-card {
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+.services-grid .service-card:hover {
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--blueprint);
+}
+/* No card lift here — a connector line runs through the numbered circles
+   (.process::before), so only the circle itself reacts, scaling from its
+   centre so it stays on the line. */
+.stage-num {
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.process .stage-card:hover .stage-num {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px var(--ink), 0 8px 20px rgba(62,108,181,0.4);
+}
+
+/* ---- stat numbers ease up as the strip reveals ---- */
+.stats-strip .stat { transition: transform var(--dur) var(--ease); }
+.stats-strip .stat:hover { transform: translateY(-3px); }
+
+/* ---- gentle background parallax (driven by JS via --parallax-y) ---- */
+body::after { transform: translateY(var(--parallax-y, 0)); will-change: transform; }
+
+/* ==========================================================================
+   FLOATING ACTIONS
+   ========================================================================== */
+
+.back-to-top {
+  position: fixed; bottom: var(--s-5); right: var(--s-5); width: 46px; height: 46px;
+  border-radius: 50%; background: var(--signal-bg); color: var(--on-signal); border: none;
+  font-size: var(--fs-lg); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transform: translateY(10px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility var(--dur) var(--ease);
+  box-shadow: var(--shadow-sm); z-index: 90;
+}
+.back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+.back-to-top:hover { transform: translateY(-3px); }
+
+.floating-contact {
+  position: fixed; left: var(--s-5); bottom: var(--s-5); z-index: 95;
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+.fab {
+  position: relative; width: 54px; height: 54px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.fab svg { width: 28px; height: 28px; }
+.fab:hover { transform: translateY(-3px); }
+.fab.whatsapp { background: #25D366; box-shadow: 0 8px 22px rgba(37,211,102,0.4); }
+.fab.whatsapp svg { fill: #fff; }
+.fab.whatsapp:hover { box-shadow: 0 12px 30px rgba(37,211,102,0.55); }
+/* kept, but slowed from 2s to 3.4s — it's an action prompt, not decoration */
+.fab.whatsapp::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: #25D366; z-index: -1;
+  animation: fabPulse 3.4s ease-out infinite;
+}
+@media (max-width: 640px) {
+  .floating-contact { left: var(--s-4); bottom: var(--s-4); gap: var(--s-3); }
+  .fab { width: 50px; height: 50px; }
+  .fab svg { width: 24px; height: 24px; }
+  .back-to-top { bottom: var(--s-4); right: var(--s-4); }
+}
+
+
+
+/* ==========================================================================
+   BOOKING — "Book a 1:1 meeting"
+   A three-step overlay: pick a day → pick a slot → leave details.
+
+   There is no backend behind this. Availability is generated in the browser
+   from the rules in BOOKING (script.js), and the finished booking is POSTed
+   to the same Formspree endpoint the contact form uses, so it arrives as an
+   email. Consequence worth remembering: two people CAN pick the same slot —
+   the confirmation copy says the time is held, not booked, on purpose.
+
+   Every time on screen is rendered in ONE timezone (the studio's), so a
+   visitor abroad and the studio never read different clocks off the same UI.
+   ========================================================================== */
+
+/* ---- the secondary hero prompt that opens it ---- */
+.cta-alt {
+  margin-top: var(--s-4); display: inline-flex; align-items: center; gap: var(--s-2);
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
+}
+.cta-alt:hover { color: var(--signal); }
+.cta-alt .arrow { transition: transform var(--dur-fast) var(--ease); }
+.cta-alt:hover .arrow { transform: translateX(3px); }
+
+/* ---- the panel in the contact section ---- */
+.book-panel {
+  margin-top: var(--s-5); padding-top: var(--s-5); border-top: 1px dashed var(--line);
+}
+.book-panel p {
+  color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-body);
+  margin-bottom: var(--s-4);
+}
+.book-panel .btn-book { width: 100%; justify-content: center; }
+
+.btn-book {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--paper);
+  padding: var(--s-3) var(--s-5); border-radius: var(--r-sm);
+  font-family: var(--body); font-size: var(--fs-base); font-weight: 600; cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
+              background var(--dur-fast) var(--ease);
+}
+.btn-book:hover { border-color: var(--blueprint); background: var(--tint); transform: translateY(-2px); }
+.btn-book svg { width: 18px; height: 18px; flex: none; stroke: var(--signal); }
+
+/* header variant — sized to sit beside .nav-cta rather than tower over it */
+.nav-book {
+  padding: var(--s-2) var(--s-4); font-size: var(--fs-sm); white-space: nowrap;
+}
+.nav-book svg { width: 15px; height: 15px; }
+/* The nav runs out of room well before the 780px menu breakpoint once this
+   sits next to "Get a quote", so it retires early — the mobile menu, the hero
+   prompt and the contact panel all still open the same dialog. */
+@media (max-width: 1080px) { .nav-book { display: none; } }
+
+/* mobile-menu variant — full width, matching the "Get a quote" block above it */
+.menu-book {
+  display: flex; width: 100%; justify-content: center; margin-top: var(--s-3);
+}
+
+/* ---- overlay ---- */
+.booking-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  display: grid; place-items: center; padding: var(--s-4);
+  background: rgba(6, 10, 18, 0.78);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--dur-med) var(--ease), visibility var(--dur-med) var(--ease);
+}
+.booking-overlay.open { opacity: 1; visibility: visible; }
+/* `display: grid` above outranks the UA stylesheet's `[hidden] { display: none }`,
+   so the attribute has to be honoured explicitly or the overlay never leaves the
+   layout. Same reason for the flex list item below. */
+.booking-overlay[hidden] { display: none; }
+.booking-meta li[hidden] { display: none; }
+
+.booking-modal {
+  position: relative;
+  width: min(1000px, 100%); max-height: min(92vh, 780px);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+  display: grid; grid-template-columns: 270px 1fr;
+  transform: translateY(14px) scale(0.985);
+  transition: transform var(--dur-med) var(--ease-out);
+}
+.booking-overlay.open .booking-modal { transform: none; }
+
+.booking-close {
+  position: absolute; top: var(--s-3); right: var(--s-3); z-index: 2;
+  width: 32px; height: 32px; border-radius: var(--r-sm);
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--muted);
+  font-size: 1rem; line-height: 1; cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.booking-close:hover { color: var(--paper); border-color: var(--blueprint); }
+
+/* ---- left rail: what is actually being booked ---- */
+.booking-aside {
+  padding: var(--s-6) var(--s-5);
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--tint), transparent);
+}
+.booking-aside .logo-img { height: 30px; width: auto; margin-bottom: var(--s-5); }
+.booking-aside h3 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  color: var(--paper); margin-bottom: var(--s-3);
+}
+.booking-aside > p { color: var(--muted); font-size: var(--fs-sm); line-height: var(--lh-body); }
+.booking-meta { list-style: none; margin-top: var(--s-5); display: grid; gap: var(--s-3); }
+.booking-meta li {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--paper);
+}
+.booking-meta svg { width: 16px; height: 16px; flex: none; stroke: var(--blueprint); }
+/* the chosen slot, echoed back once step 1 is done */
+.booking-meta li.picked { color: var(--signal); }
+.booking-meta li.picked svg { stroke: var(--signal); }
+
+/* ---- right side: the steps ---- */
+.booking-main { padding: var(--s-6) var(--s-5); overflow-y: auto; min-width: 0; }
+.booking-step { display: none; }
+.booking-step.active { display: block; }
+
+/* step 1 — calendar beside the slot column */
+.booking-pick { display: grid; grid-template-columns: 1fr 190px; gap: var(--s-5); min-width: 0; }
+
+.cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--s-4);
+}
+.cal-month { font-family: var(--display); font-size: var(--fs-md); font-weight: 600; color: var(--paper); }
+.cal-nav { display: flex; gap: var(--s-2); }
+.cal-nav button {
+  width: 30px; height: 30px; border-radius: var(--r-sm);
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--paper);
+  cursor: pointer; line-height: 1;
+  transition: border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+.cal-nav button:hover:not([disabled]) { border-color: var(--blueprint); }
+.cal-nav button[disabled] { opacity: 0.3; cursor: default; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--s-2); }
+.cal-dow {
+  font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.06em;
+  color: var(--muted); text-align: center; padding-bottom: var(--s-2);
+}
+.cal-day {
+  position: relative; aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm);
+  color: var(--paper); font-family: var(--mono); font-size: var(--fs-sm); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.cal-day:hover:not([disabled]) { border-color: var(--blueprint); background: var(--tint); }
+/* days outside the window, or with no working hours left, keep their cell so
+   the grid holds its shape — dropping the fill and the border is what makes
+   "bookable" read at a glance, since the numerals alone are too quiet. */
+.cal-day[disabled] {
+  background: transparent; border-color: transparent;
+  color: var(--muted); opacity: 0.32; cursor: default;
+}
+.cal-day.blank { background: none; border: none; cursor: default; }
+.cal-day.is-selected { background: var(--signal-bg); color: var(--on-signal); font-weight: 700; }
+.cal-day.is-today::after {
+  content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--live);
+}
+.cal-day.is-selected.is-today::after { background: var(--on-signal); }
+
+.cal-note {
+  margin-top: var(--s-4); font-family: var(--mono); font-size: var(--fs-xs);
+  color: var(--muted); line-height: var(--lh-snug);
+}
+
+.slot-col { display: flex; flex-direction: column; min-width: 0; }
+.slot-head {
+  font-family: var(--display); font-size: var(--fs-base); font-weight: 600;
+  color: var(--paper); margin-bottom: var(--s-3);
+}
+.slot-list { display: grid; gap: var(--s-2); align-content: start; }
+.slot-btn {
+  background: var(--ink); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: var(--s-3); color: var(--paper);
+  font-family: var(--mono); font-size: var(--fs-sm); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.slot-btn:hover { border-color: var(--signal); color: var(--signal); }
+.slot-empty {
+  /* .slot-list is a grid; without this the placeholder gets squeezed into a
+     single 96px track on narrow screens and wraps one word per line. */
+  grid-column: 1 / -1;
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+/* step 2 — details */
+.booking-step h4 {
+  font-family: var(--display); font-size: var(--fs-lg); font-weight: 600;
+  color: var(--paper); margin-bottom: var(--s-2);
+}
+.booking-step .step-lede {
+  color: var(--muted); font-size: var(--fs-sm); line-height: var(--lh-body);
+  margin-bottom: var(--s-5);
+}
+/* the global `form` rule is a single flex column; the booking form wants pairs,
+   so it opts out into its own grid and neutralises the label offset that the
+   flex `gap` was compensating for. */
+.booking-form { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4) var(--s-3); }
+.booking-form .field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.booking-form .field.full { grid-column: 1 / -1; }
+.booking-form label { margin-bottom: 0; }
+.booking-form label .req { color: var(--signal); }
+.booking-form textarea { min-height: 74px; }
+.booking-actions {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s-4);
+  margin-top: var(--s-2);
+}
+.booking-actions .btn-primary { margin-top: 0; }
+.booking-back {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
+}
+.booking-back:hover { color: var(--paper); }
+.booking-form .form-status { grid-column: 1 / -1; }
+/* honeypot: a real person never sees it, a naive bot fills it in */
+.booking-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* step 3 — confirmation */
+.booking-done { text-align: center; padding: var(--s-7) var(--s-4); }
+.booking-done .tick {
+  width: 54px; height: 54px; margin: 0 auto var(--s-5);
+  border-radius: 50%; display: grid; place-items: center;
+  background: rgba(74, 222, 128, 0.12); border: 1px solid var(--live);
+  color: var(--live); font-size: 1.5rem;
+}
+.booking-done h4 { margin-bottom: var(--s-3); }
+.booking-done p { color: var(--muted); font-size: var(--fs-base); line-height: var(--lh-body); }
+.booking-done .when {
+  display: inline-block; margin: var(--s-4) 0;
+  padding: var(--s-3) var(--s-5); border-radius: var(--r-sm);
+  background: var(--panel-2); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: var(--fs-sm); color: var(--paper);
+}
+.booking-done .done-actions {
+  display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap;
+  margin-top: var(--s-5);
+}
+
+/* ---- narrow screens: the three columns stack into one scrolling sheet ---- */
+@media (max-width: 860px) {
+  .booking-modal { grid-template-columns: 1fr; max-height: 92vh; overflow-y: auto; }
+  .booking-aside {
+    border-right: none; border-bottom: 1px solid var(--line);
+    padding: var(--s-5) var(--s-5) var(--s-4);
+  }
+  .booking-aside .logo-img { margin-bottom: var(--s-4); }
+  .booking-meta { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .booking-main { overflow: visible; padding: var(--s-5); }
+  .booking-pick { grid-template-columns: 1fr; gap: var(--s-5); }
+  /* on a phone the slots read better as a wrapping row than a tall column */
+  .slot-list { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+}
+@media (max-width: 480px) {
+  .booking-overlay { padding: 0; }
+  .booking-modal { border-radius: 0; border: none; max-height: 100vh; height: 100%; }
+  .booking-form { grid-template-columns: 1fr; }
+  .cal-grid { gap: var(--s-1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  /* anything that starts at opacity:0 and relies on an animation to appear must
+     be forced visible here, or it stays invisible when animations are off. */
+  .term__typed { width: auto; border-right-color: transparent; }
+  .term__step, .term__live, .term__stats { opacity: 1; transform: none; }
+  .hero .eyebrow, .hero h1, .hero p.lede, .hero .cta-row, .hero .cta-alt, .hero .hero-viz { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
